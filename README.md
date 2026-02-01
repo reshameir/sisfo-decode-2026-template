@@ -87,9 +87,6 @@ npm install
 
 Buat database baru di PhpMyAdmin dengan nama sesuai yang Anda set di `.env` (contoh: `sisfo_decode`):
 
-```sql
-CREATE DATABASE sisfo_decode;
-
 ### Langkah 6: Jalankan Migration
 
 ```bash
