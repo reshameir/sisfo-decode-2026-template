@@ -605,100 +605,97 @@ class StudyProgram extends Model
 
 ## 🔧 3. Controller Examples
 
-### StudyProgramController
+### Method index() - Menampilkan Data
 ```php
-<?php
-
-namespace App\Http\Controllers;
-
-use App\Models\StudyProgram;
-use Illuminate\Http\Request;
-
-class StudyProgramController extends Controller
+public function index()
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        $studyPrograms = StudyProgram::orderBy('code')->get();
-        return view('study-programs.index', compact('studyPrograms'));
-    }
+    $studyPrograms = StudyProgram::orderBy('code')->get();
+    return view('study-programs.index', compact('studyPrograms'));
+}
+```
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('study-programs.create');
-    }
+### Method create() - Form Tambah
+```php
+public function create()
+{
+    return view('study-programs.create');
+}
+```
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'code' => 'required|string|max:10|unique:study_programs,code',
-            'name' => 'required|string|max:255',
-        ], [
-            'code.required' => 'Kode program studi wajib diisi',
-            'code.unique' => 'Kode program studi sudah digunakan',
-            'name.required' => 'Nama program studi wajib diisi',
-        ]);
+### Method store() - Simpan Data Baru
+```php
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'code' => 'required|string|max:10|unique:study_programs,code',
+        'name' => 'required|string|max:255',
+    ], [
+        'code.required' => 'Kode program studi wajib diisi',
+        'code.unique' => 'Kode program studi sudah digunakan',
+        'name.required' => 'Nama program studi wajib diisi',
+    ]);
 
-        StudyProgram::create($validated);
+    StudyProgram::create($validated);
 
+    return redirect()
+        ->route('study-programs.index')
+        ->with('success', 'Program studi berhasil ditambahkan!');
+}
+```
+
+### Method edit() - Form Edit
+```php
+public function edit(StudyProgram $studyProgram)
+{
+    return view('study-programs.edit', compact('studyProgram'));
+}
+```
+
+### Method update() - Update Data
+```php
+public function update(Request $request, StudyProgram $studyProgram)
+{
+    $validated = $request->validate([
+        'code' => 'required|string|max:10|unique:study_programs,code,' . $studyProgram->id,
+        'name' => 'required|string|max:255',
+    ], [
+        'code.required' => 'Kode program studi wajib diisi',
+        'code.unique' => 'Kode program studi sudah digunakan',
+        'name.required' => 'Nama program studi wajib diisi',
+    ]);
+
+    $studyProgram->update($validated);
+
+    return redirect()
+        ->route('study-programs.index')
+        ->with('success', 'Program studi berhasil diupdate!');
+}
+```
+
+### Method destroy() - Hapus Data
+```php
+public function destroy(StudyProgram $studyProgram)
+{
+    try {
+        $studyProgram->delete();
         return redirect()
             ->route('study-programs.index')
-            ->with('success', 'Program studi berhasil ditambahkan!');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(StudyProgram $studyProgram)
-    {
-        return view('study-programs.edit', compact('studyProgram'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, StudyProgram $studyProgram)
-    {
-        $validated = $request->validate([
-            'code' => 'required|string|max:10|unique:study_programs,code,' . $studyProgram->id,
-            'name' => 'required|string|max:255',
-        ], [
-            'code.required' => 'Kode program studi wajib diisi',
-            'code.unique' => 'Kode program studi sudah digunakan',
-            'name.required' => 'Nama program studi wajib diisi',
-        ]);
-
-        $studyProgram->update($validated);
-
+            ->with('success', 'Program studi berhasil dihapus!');
+    } catch (\Exception $e) {
         return redirect()
             ->route('study-programs.index')
-            ->with('success', 'Program studi berhasil diupdate!');
+            ->with('error', 'Gagal menghapus program studi. Mungkin masih ada data terkait.');
     }
+}
+```
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(StudyProgram $studyProgram)
-    {
-        try {
-            $studyProgram->delete();
-            return redirect()
-                ->route('study-programs.index')
-                ->with('success', 'Program studi berhasil dihapus!');
-        } catch (\Exception $e) {
-            return redirect()
-                ->route('study-programs.index')
-                ->with('error', 'Gagal menghapus program studi. Mungkin masih ada data terkait.');
-        }
-    }
+### Contoh dengan Eager Loading (untuk relasi)
+```php
+public function index()
+{
+    // Load data mahasiswa dengan relasi studyProgram
+    $students = Student::with('studyProgram')->get();
+    return view('students.index', compact('students'));
 }
 ```
 
@@ -728,156 +725,157 @@ Route::resource('subjects', SubjectController::class);
 
 ## 🎨 5. View Examples
 
-### Index View dengan Relasi
+### Struktur Dasar View
 ```blade
 @extends('layouts.app')
 
-@section('title', 'Daftar Mahasiswa')
+@section('title', 'Judul Halaman')
 
 @section('content')
-    <div class="page-header">
-        <h1><i class="bi bi-people-fill me-2"></i>Daftar Mahasiswa</h1>
-    </div>
-
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Data Mahasiswa</span>
-            <a href="{{ route('students.create') }}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-circle me-1"></i>Tambah Mahasiswa
-            </a>
-        </div>
-        <div class="card-body">
-            @if($students->count() > 0)
-                <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>NIM</th>
-                            <th>Nama</th>
-                            <th>Program Studi</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($students as $index => $student)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $student->nim }}</td>
-                                <td>{{ $student->name }}</td>
-                                <td>
-                                    <span class="badge bg-info">
-                                        {{ $student->studyProgram->name }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <a href="{{ route('students.edit', $student) }}" 
-                                       class="btn btn-warning btn-sm">
-                                        <i class="bi bi-pencil-square"></i> Edit
-                                    </a>
-                                    
-                                    <form id="delete-{{ $student->id }}" 
-                                          action="{{ route('students.destroy', $student) }}" 
-                                          method="POST" 
-                                          class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" 
-                                                onclick="confirmDelete('delete-{{ $student->id }}')" 
-                                                class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <div class="alert alert-info">
-                    Belum ada data mahasiswa. 
-                    <a href="{{ route('students.create') }}">Tambah sekarang</a>
-                </div>
-            @endif
-        </div>
-    </div>
+    {{-- Konten di sini --}}
 @endsection
 ```
 
-### Form dengan Dropdown
+### Page Header
 ```blade
-@extends('layouts.app')
+<div class="page-header">
+    <h1><i class="bi bi-people-fill me-2"></i>Daftar Mahasiswa</h1>
+</div>
+```
 
-@section('title', 'Tambah Mahasiswa')
-
-@section('content')
-    <div class="page-header">
-        <h1><i class="bi bi-plus-circle me-2"></i>Tambah Mahasiswa</h1>
+### Card dengan Header dan Button
+```blade
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Data Mahasiswa</span>
+        <a href="{{ route('students.create') }}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle me-1"></i>Tambah Mahasiswa
+        </a>
     </div>
-
-    <div class="card">
-        <div class="card-body">
-            <form action="{{ route('students.store') }}" method="POST">
-                @csrf
-                
-                <div class="mb-3">
-                    <label for="nim" class="form-label">NIM <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('nim') is-invalid @enderror" 
-                           id="nim" 
-                           name="nim" 
-                           value="{{ old('nim') }}"
-                           required>
-                    @error('nim')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="name" class="form-label">Nama <span class="text-danger">*</span></label>
-                    <input type="text" 
-                           class="form-control @error('name') is-invalid @enderror" 
-                           id="name" 
-                           name="name" 
-                           value="{{ old('name') }}"
-                           required>
-                    @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="mb-3">
-                    <label for="study_program_id" class="form-label">
-                        Program Studi <span class="text-danger">*</span>
-                    </label>
-                    <select name="study_program_id" 
-                            id="study_program_id" 
-                            class="form-select @error('study_program_id') is-invalid @enderror" 
-                            required>
-                        <option value="">-- Pilih Program Studi --</option>
-                        @foreach($studyPrograms as $program)
-                            <option value="{{ $program->id }}" 
-                                    {{ old('study_program_id') == $program->id ? 'selected' : '' }}>
-                                {{ $program->code }} - {{ $program->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('study_program_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-save me-1"></i>Simpan
-                    </button>
-                    <a href="{{ route('students.index') }}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle me-1"></i>Batal
-                    </a>
-                </div>
-            </form>
-        </div>
+    <div class="card-body">
+        {{-- Isi card --}}
     </div>
-@endsection
+</div>
+```
+
+### Tabel dengan Relasi
+```blade
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>NIM</th>
+            <th>Nama</th>
+            <th>Program Studi</th>
+            <th class="text-center">Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($students as $index => $student)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $student->nim }}</td>
+                <td>{{ $student->name }}</td>
+                <td>
+                    {{-- Akses data relasi --}}
+                    <span class="badge bg-info">
+                        {{ $student->studyProgram->name }}
+                    </span>
+                </td>
+                <td class="text-center">
+                    {{-- Button aksi --}}
+                </td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+```
+
+### Button Edit dan Delete
+```blade
+{{-- Button Edit --}}
+<a href="{{ route('students.edit', $student) }}" 
+   class="btn btn-warning btn-sm">
+    <i class="bi bi-pencil-square"></i> Edit
+</a>
+
+{{-- Form Delete dengan Konfirmasi --}}
+<form id="delete-{{ $student->id }}" 
+      action="{{ route('students.destroy', $student) }}" 
+      method="POST" 
+      class="d-inline">
+    @csrf
+    @method('DELETE')
+    <button type="button" 
+            onclick="confirmDelete('delete-{{ $student->id }}')" 
+            class="btn btn-danger btn-sm">
+        <i class="bi bi-trash"></i> Hapus
+    </button>
+</form>
+```
+
+### Kondisional Jika Data Kosong
+```blade
+@if($students->count() > 0)
+    {{-- Tampilkan tabel --}}
+@else
+    <div class="alert alert-info">
+        Belum ada data mahasiswa. 
+        <a href="{{ route('students.create') }}">Tambah sekarang</a>
+    </div>
+@endif
+```
+
+### Input Field dengan Error Handling
+```blade
+<div class="mb-3">
+    <label for="nim" class="form-label">NIM <span class="text-danger">*</span></label>
+    <input type="text" 
+           class="form-control @error('nim') is-invalid @enderror" 
+           id="nim" 
+           name="nim" 
+           value="{{ old('nim') }}"
+           required>
+    @error('nim')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+```
+
+### Dropdown Select dengan Old Value
+```blade
+<div class="mb-3">
+    <label for="study_program_id" class="form-label">
+        Program Studi <span class="text-danger">*</span>
+    </label>
+    <select name="study_program_id" 
+            id="study_program_id" 
+            class="form-select @error('study_program_id') is-invalid @enderror" 
+            required>
+        <option value="">-- Pilih Program Studi --</option>
+        @foreach($studyPrograms as $program)
+            <option value="{{ $program->id }}" 
+                    {{ old('study_program_id') == $program->id ? 'selected' : '' }}>
+                {{ $program->code }} - {{ $program->name }}
+            </option>
+        @endforeach
+    </select>
+    @error('study_program_id')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
+```
+
+### Button Submit dan Batal
+```blade
+<div class="d-flex gap-2">
+    <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save me-1"></i>Simpan
+    </button>
+    <a href="{{ route('students.index') }}" class="btn btn-secondary">
+        <i class="bi bi-x-circle me-1"></i>Batal
+    </a>
+</div>
 ```
 
 ### Edit Form dengan Dropdown (selected)

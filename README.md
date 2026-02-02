@@ -160,9 +160,9 @@ Berikut adalah checklist tugas yang harus diselesaikan:
 
 - [ ] **Tambahkan Resource Routes**
   - File: `routes/web.php`
-  - Tambahkan route resource untuk Study Programs: `Route::resource('study-programs', StudyProgramController::class);`
-  - Tambahkan route resource untuk Students: `Route::resource('students', StudentController::class);`
-  - Tambahkan route resource untuk Subjects: `Route::resource('subjects', SubjectController::class);`
+  - Tambahkan route resource untuk Study Programs
+  - Tambahkan route resource untuk Students
+  - Tambahkan route resource untuk Subjects
 
 ### 🎨 4. Views (Blade Templates)
 
@@ -371,7 +371,7 @@ Setiap view yang Anda buat harus extend layout `app.blade.php`:
 
 ---
 
-## 💡 Tips Mengerjakan Bootcamp
+## 💡 Tips Mengerjakan Penugasan Sisfo Decode 2026
 
 1. **Mulai dari yang sederhana**
    - Selesaikan Study Programs terlebih dahulu (sudah ada contohnya)
@@ -423,4 +423,4 @@ Project ini menggunakan lisensi MIT. Silakan gunakan untuk keperluan pembelajara
 
 ---
 
-**Selamat mengerjakan bootcamp! 🎉**
+**Selamat mengerjakan penugasan Sisfo Decode 2026! 🎉**
